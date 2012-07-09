@@ -1,0 +1,15 @@
+function CIG = DSR(data,t,xr,xs,z,v)
+
+% form common offset image gather
+DSR_step = opTEST(size(data),t,xr,xs,z,v(1:length(z)));
+image = DSR_step*vec(data); 
+
+% shot_receiver -- midpoint_offset conversion
+MHImage = SR2MH(image,1); % conversion
+[f,ky,kh,h] = kykh(t,xr,xs); % compute mh(yh) coordinate
+
+% form common waveparameter gather via Radon
+CIGmig = opCIGmig(f,ky,kh,h,z);
+CIG = CIGmig*vec(MHImage);
+
+

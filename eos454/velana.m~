@@ -1,0 +1,75 @@
+function [vel] = velana(name,CDPnumber,vmin,vmax,pick)
+% this function is aiming to got velocity vector for Data volumn for certain 
+% cdp point with manual pick(cdp adapative)
+
+% name : file name of .su file
+% CDPnumber : intended CDP nummber to carry out vel analysis
+% vmin : minum velocity in velocity semblance
+% vmax : maxmum velocity in velocity semblance
+% pick : an vector given the manual picked point on the velocity semblance
+%        eg: for cdp 341, pick = [ 2 3 5 9]
+%%name: Lina Maio
+%%Student No: 74721119
+
+
+% read data
+[Data,SuTraceHeaders,SuHeader] = ReadSu('name','endian','b');
+% form a midpoint gather(using CDP by assuming horizontal layers)
+j = 1;
+for i = 1:10000  
+    if SuTraceHeaders(i).cdp == CDPnumber
+        CDPGA(:,j) = Data(:,i); 
+        CDPGAHeader(:,j) = SuTraceHeaders(i);
+        j = j + 1;
+    end
+end
+if CDPGAHeader(1).offset > CDPGAHeader(end).offset
+    CDPGA = fliplr(CDPGA);
+    CDPGAHeader = fliplr(CDPGAHeader);
+end
+% extract the time, offset needed for 'nmor' function
+%t0 = SuHeader.dtOrig;
+t0 = 0;
+dt = SuHeader.dt;
+nt = size(CDPGA,1);
+t = t0+[1:1:nt].*dt; % time coordinate
+t = t./10^6; % time coordinate in second
+x = [CDPGAHeader.offset]; % offset coordinate
+% form velocity span semblance
+v_low = vmin;
+v_high = vmax;
+n = 50;%sampling in velocity
+for i = 1:n
+    v = v_low+(i-1)*((v_high-v_low)/n);
+    vnmo = v.*ones(size(t));
+    s = nmor(CDPGA,vec(t),x,vec(vnmo),1);
+    S(:,i) = sum(s.^2,2);
+end
+% figure;imagesc(S);hold on;
+% set(gca,'XTickLabel',[linspace(v_low,v_high,10)]);
+[maxm,a] = max(abs(S),[],2);
+index = 1:50:size(a,1); % sample in the axe of t0
+asample = a(index);
+P = polyfit(index,asample',9);
+% velocity picking
+index_pick = index(pick); 
+y = polyval(P,index_pick);
+% get the velocity function(function of indices)from the picked velocities
+PP = polyfit(index_pick,y,2);
+yy = polyval(PP,1:1:size(CDPGA,1));% the indices for velocity
+% got the velocity 
+v = v_low+(yy-1)*((v_high-v_low)/n);
+vel = v;
+
+
+
+
+
+
+
+
+
+
+
+
+
