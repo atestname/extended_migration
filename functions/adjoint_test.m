@@ -5,7 +5,7 @@ function a = adjoint_test(K)
 x_test = rand(size(K,2),1);%+rand(size(K,2),1)*i;
 y_test = K*rand(size(K,2),1);%+rand(size(K,1),1)*i;
 
-temp = (K*x_test);
+%temp = (K*x_test);
 left = y_test'*(K*x_test);
 right = (K'*y_test)'*x_test;
 

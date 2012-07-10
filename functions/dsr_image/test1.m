@@ -31,10 +31,6 @@ image = zeros(length(z),length(x),length(y));
 S = opKron(opDirac(length(ky)),opDirac(length(kx)),ones(1,length(f)));
 F = opFFT1(size(ff))';
 
-% copy data
-% R = repmat(opDirac(numel(data)),length(z),1);
-% data = R*vec(data);
-
 % loop over depth levels
 for iz = 1:length(z)
     D = opDSR_step_spot(ff,kkx,kky,dz,v(iz));
